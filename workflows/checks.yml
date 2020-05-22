@@ -1,0 +1,47 @@
+name: Code analysis
+on: [push]
+jobs:
+  eslint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: eslint-github-pr-check
+        uses: ./
+        with:
+          reporter: github-pr-check
+          eslint_flags: 'testdata/ --ignore-pattern /test-subproject/'
+      - name: eslint-github-check
+        uses: ./
+        with:
+          reporter: github-check
+          level: warning
+          eslint_flags: 'testdata/ --ignore-pattern /test-subproject/'
+      - name: eslint-github-pr-review
+        uses: ./
+        with:
+          reporter: github-pr-review
+          eslint_flags: 'testdata/ --ignore-pattern /test-subproject/'
+      - name: eslint-subproject-github-pr-review
+        uses: ./
+        with:
+          reporter: github-pr-review
+          workdir: ./test-subproject
+          eslint_flags: 'sub-testdata/'
+      - name: eslint-subproject
+        uses: ./
+        with:
+          workdir: ./test-subproject
+          eslint_flags: 'sub-testdata/'
+  test:
+    runs-on: ubuntu-latest
+    name: check tests
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: testomatio/check-tests@stable
+      with:
+        framework: cypress
+        tests: "./cypress/integration/examples/**.spec.js"
+        has-tests-label: true
